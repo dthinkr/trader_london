@@ -22,7 +22,7 @@ class BaseTrader:
     shares = 0
     initial_cash = 0
     initial_shares = 0
-
+    
     def __init__(self, trader_type: TraderType, cash=0, shares=0):
 
         self.initial_shares = shares
@@ -170,6 +170,7 @@ class BaseTrader:
         for transaction in transactions:
             if transaction['trader_id'] == self.id:
                 transactions_relevant_to_self.append(transaction)
+        
         return transactions_relevant_to_self
 
     async def on_message_from_system(self, message):
@@ -177,6 +178,7 @@ class BaseTrader:
             json_message = json.loads(message.body.decode())
             action_type = json_message.get('type')
             data = json_message
+
             
             if action_type == 'transaction_update' and self.trader_type != TraderType.NOISE.value:
                 transactions_relevant_to_self = self.check_if_relevant(data['transactions'])
@@ -215,10 +217,13 @@ class BaseTrader:
         for transaction in transactions_relevant_to_self:
             if transaction['type'] == 'bid':
                 self.shares += transaction['amount']
+                self.cash = transaction['price'] * transaction['amount']
             elif transaction['type'] == 'ask':
                 self.cash += transaction['price'] * transaction['amount']
+                self.shares -= transaction['amount']
             self.update_data_for_pnl(transaction['amount'], transaction['price'])
 
+        
     @abstractmethod
     async def post_processing_server_message(self, json_message):
         """for BaseTrader it is not implemented. For human trader we send updated info back to client.
@@ -232,12 +237,12 @@ class BaseTrader:
                 if self.cash < price * amount:
                     logger.critical(f"Trader {self.id} does not have enough cash to place bid order.")
                     return
-                self.cash -= price * amount
+                #self.cash -= price * amount
             elif order_type == OrderType.ASK:
                 if self.shares < amount:
                     logger.critical(f"Trader {self.id} does not have enough shares to place ask order.")
                     return
-                self.shares -= amount
+                #self.shares -= amount
 
         new_order = {
             "action": ActionType.POST_NEW_ORDER.value,
@@ -257,6 +262,7 @@ class BaseTrader:
         if order_id not in [order['id'] for order in self.orders]:
             logger.error(f"Trader {self.id} has no order with ID {order_id}")
             return
+
 
         order_to_cancel = next((order for order in self.orders if order['id'] == order_id), None)
 

@@ -2,6 +2,7 @@ import asyncio
 from structures import OrderType, TraderType, TradeDirection
 from main_platform.custom_logger import setup_custom_logger
 from .base_trader import BaseTrader
+import numpy as np
 
 logger = setup_custom_logger(__name__)
 
@@ -27,10 +28,11 @@ class InformedTrader(BaseTrader):
         self.get_order_to_match = get_order_to_match
         self.next_sleep_time = activity_frequency
         self.initialize_inventory(settings_informed)
+        self.num_passive_orders = abs(0.2 * settings_informed['inv'])
 
     def initialize_inventory(self, settings_informed: dict) -> None:
         if settings_informed["direction"] == TradeDirection.BUY:
-            self.shares = 0
+            self.shares = - settings_informed["inv"]
             self.cash = 1e6
         elif settings_informed["direction"] == TradeDirection.SELL:
             self.shares = settings_informed["inv"]
@@ -53,7 +55,7 @@ class InformedTrader(BaseTrader):
             if bids:
                 return max(bid["x"] for bid in bids)
             else:
-                return 2000 # magic number
+                return float("-inf")
 
     def calculate_sleep_time(self, remaining_time: float) -> float:
         # buying case
@@ -65,9 +67,7 @@ class InformedTrader(BaseTrader):
                 # calculate time
                 shares_needed = self.settings_informed["inv"] - self.shares
                 return (
-                    remaining_time
-                    / max(shares_needed, 1)
-                    * self.settings_informed["trade_intensity"]
+                    (remaining_time-10) / max(shares_needed, 1)
                 )
 
         # selling case
@@ -78,9 +78,7 @@ class InformedTrader(BaseTrader):
             else:
                 # calculate time
                 return (
-                    remaining_time
-                    / max(self.shares, 1)
-                    * self.settings_informed["trade_intensity"]
+                    (remaining_time-10)/ max(self.shares, 1)
                 )
 
         # default case
@@ -95,9 +93,45 @@ class InformedTrader(BaseTrader):
         order_side = (
             OrderType.BID if trade_direction == TradeDirection.BUY else OrderType.ASK
         )
+
+        # this part to be in a function
+        # and create an option at the structures
+
+        # self.orders have the following form
+        # {'id': '7efbdd25-8869-4b68-8641-3661632f6a3b', 
+        # 'trader_id': 'INFORMED_ac620a8d-5af1-4af5-b3be-536dc01b01ba', 
+        # 'order_type': -1, 
+        # 'amount': 1.0, 
+        # 'price': 2001.0, 
+        # 'timestamp': '2024-06-25T14:01:58.719769'}
+
+        if self.shares > 3 and len(self.orders) < self.num_passive_orders:
+            if order_side == OrderType.BID:
+                bids = self.order_book.get("bids", [])
+                price_passive = max(bid["x"] for bid in bids)
+                await self.post_new_order(1, price_passive, order_side)
+                for order in self.orders:
+                    if abs(order['price'] - price_passive) > 2*self.step:
+                         await self.send_cancel_order_request(order['id'])
+            if order_side == OrderType.ASK:
+                asks = self.order_book.get("asks", [])
+                price_passive = min(ask["x"] for ask in asks)
+                print('Passive Price:', price_passive)
+                await self.post_new_order(1, price_passive, order_side)
+                for order in self.orders:
+                    if abs(order['price'] - price_passive) > 2*self.step:
+                         await self.send_cancel_order_request(order['id'])
+            
+        else:
+            for order in self.orders:
+                await self.send_cancel_order_request(order['id'])
+
+        # this is the part where the trader
+        # crosses the spread
         price = self.get_best_opposite_price(order_side)
 
-        await self.post_new_order(1, price, order_side)
+        if price not in {float('inf'), float('-inf')} and self.shares != 0:
+            await self.post_new_order(1, price, order_side)
 
         self.next_sleep_time = self.calculate_sleep_time(remaining_time)
 

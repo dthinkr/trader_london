@@ -13,17 +13,17 @@ settings = {
 # (3) to buy or sell
 # (4) noise trader frequency activity
 settings_informed = {'time_period_in_min': 5, 'NoiseTrader_frequency_activity': 1,
-                     'trade_intensity': 0.10, 'direction': 'buy'}
+                     'trade_intensity': 0.10, 'direction': 'buy','pr_passive':0.7}
 
 # given that all the rest should run without any change
 
 def update_settings_informed(settings_informed):
     settings_informed["total_seconds"] = settings_informed["time_period_in_min"] * 60
     settings_informed['noise_activity'] = int(settings_informed['total_seconds'] * settings_informed['NoiseTrader_frequency_activity'] )
-    settings_informed['inv'] = int(settings_informed['noise_activity'] * settings_informed['trade_intensity'] / (1 - settings_informed['trade_intensity']))
+    settings_informed['inv'] = int(settings_informed['noise_activity'] * (1-settings_informed['pr_passive']) * settings_informed['trade_intensity'] / (1 - settings_informed['trade_intensity']))
 
     settings_informed["sn"] = (
-        settings_informed["total_seconds"] - 10
+        settings_informed["total_seconds"]
     ) / settings_informed["inv"]
 
     time_plan = [settings_informed["sn"]] * settings_informed["inv"]

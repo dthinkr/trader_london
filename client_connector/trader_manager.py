@@ -59,17 +59,21 @@ class TraderManager:
         settings_noise['pr_cancel'] = 0.1
         settings_noise['pr_bid'] = 0.5
         settings_noise['step'] = params.get('step')
-        print(settings_noise)
 
         self.noise_traders = [NoiseTrader(activity_frequency=params.get('activity_frequency'),
                                           order_amount=params.get('order_amount'),
                                           settings = settings, 
                                           settings_noise=settings_noise) for _ in range(n_noise_traders)]
 
+        
         settings_informed['time_period_in_min'] = params.get('trading_day_duration')
         settings_informed['trade_intensity'] = params.get('trade_intensity_informed')
         settings_informed['direction'] = params.get('trade_direction_informed')
+        settings_informed['NoiseTrader_frequency_activity'] = params.get('activity_frequency')
+        settings_informed['pr_passive'] = settings_noise['pr_passive']
         updated_settings_informed, informed_time_plan, informed_state = update_settings_informed(settings_informed)
+        print(updated_settings_informed)
+
         self.informed_traders = [InformedTrader(activity_frequency=params.get('activity_frequency'), 
                                                 settings=settings, 
                                                 settings_informed=updated_settings_informed, 

@@ -75,7 +75,7 @@ def process_df(df: pl.DataFrame) -> pl.DataFrame:
 
 
 def delete_all_tables() -> None:
-    con = duckdb.connect(f"md:{CONFIG.DATASET}?motherduck_token={CONFIG.MD_TOKEN}")
+    con = duckdb.connect("/Users/marioljonuzaj/Documents/Python Projects/Simulations/data.duckdb")
     mongo_client = MongoClient("localhost", 27017)
 
     con.execute(f"DROP TABLE IF EXISTS {CONFIG.TABLE_REF}")

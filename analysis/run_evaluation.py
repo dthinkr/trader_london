@@ -16,7 +16,7 @@ from .utilities import flatten_item, load_config, process_df
 CONFIG = load_config()
 
 # cloud_db
-con = duckdb.connect(f"md:{CONFIG.DATASET}?motherduck_token={CONFIG.MD_TOKEN}")
+con = duckdb.connect(f"/Users/marioljonuzaj/Documents/Python Projects/Simulations/data.duckdb")
 con.execute(
     f"""CREATE TABLE IF NOT EXISTS {CONFIG.TABLE_REF} (session_id VARCHAR, trader_data STRING)"""
 )
@@ -34,8 +34,10 @@ con.execute(
 
 # example usage for list (combinatory)
 bounds = {
-    "trade_intensity_informed": [0.05, 0.3],
-    "passive_order_probability": [0.5, 0.9],
+    "trading_day_duration": [5],
+    'activity_frequency' : [1],
+    'trade_intensity_informed': [0.2],
+    'passive_order_probability': [0.7],
 }
 
 # bounds = {

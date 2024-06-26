@@ -34,7 +34,7 @@ class NoiseTrader(BaseTrader):
                             # (2000, OrderType.BID), (2000, OrderType.ASK), (2000, OrderType.BID), (2000, OrderType.ASK)
                             ]
         self.order_index = 0
-
+        
 
     async def post_orders_from_list(self):
         if self.order_index < len(self.order_list):
@@ -42,7 +42,7 @@ class NoiseTrader(BaseTrader):
             self.order_index += 1
 
     def cooling_interval(self, target: float) -> float:
-        interval = np.random.exponential(1 / target)
+        interval = np.random.gamma(shape=1,scale=1/target)
         return interval
 
     def get_noise_order(self, book_format):
@@ -59,26 +59,26 @@ class NoiseTrader(BaseTrader):
 
         if pr_passive_signal:
             if pr_bid_signal:
-                best_bid = book_format[2]
-                prices_to_choose = [best_bid - i for i in range(step, step * levels_n)]
+                best_ask = book_format[0]
+                prices_to_choose = [best_ask - i for i in range(step, step * levels_n)]
                 price = random.choice(prices_to_choose)
                 amount = self.order_amount
                 order["bid"] = {price: [amount]}
             else:
-                best_ask = book_format[0]
-                prices_to_choose = [best_ask + i for i in range(step, step * levels_n)]
+                best_bid = book_format[2]
+                prices_to_choose = [best_bid + i for i in range(step, step * levels_n)]
                 price = random.choice(prices_to_choose)
                 amount = self.order_amount
                 order["ask"] = {price: [amount]}
         else:
             if pr_bid_signal:
-                best_bid = book_format[2]
-                price = best_bid + step
+                best_ask = book_format[0]
+                price = best_ask 
                 amount = self.order_amount
                 order["bid"] = {price: [amount]}
             else:
-                best_ask = book_format[0]
-                price = best_ask - step
+                best_bid = book_format[2]
+                price = best_bid 
                 amount = self.order_amount
                 order["ask"] = {price: [amount]}
 
@@ -92,7 +92,10 @@ class NoiseTrader(BaseTrader):
         if not self.order_book:
             await self.post_new_order(1, self.initial_value + self.step, OrderType.ASK)
             await self.post_new_order(1, self.initial_value - self.step, OrderType.BID)
+            await self.post_new_order(1, self.initial_value + 2* self.step, OrderType.ASK)
+            await self.post_new_order(1, self.initial_value - 2* self.step, OrderType.BID)
             return
+
 
         book_format = convert_to_book_format_new(self.order_book)
 
@@ -112,6 +115,8 @@ class NoiseTrader(BaseTrader):
 
         for order in orders:
             await self.process_order(order)
+
+    
 
     async def process_order(self, order) -> None:
         if order["action_type"] == ActionType.POST_NEW_ORDER.value:
@@ -138,7 +143,6 @@ class NoiseTrader(BaseTrader):
 
         order_to_cancel = random.choice(self.orders)
         order_id = order_to_cancel["id"]
-
         await self.send_cancel_order_request(order_id)
         logger.info(f"Canceled order ID {order_id[:10]}")
 

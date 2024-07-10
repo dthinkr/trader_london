@@ -1,5 +1,5 @@
 version: 2
-authtoken: 2imgtiyOz8rqGZQKcVJQzubRKZp_26BZvhvtdeok1PPWZodLp
+authtoken: 
 tunnels:
   combined:
     addr: nginx:80

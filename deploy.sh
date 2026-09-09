@@ -37,7 +37,14 @@ git fetch origin "$DEPLOY_BRANCH"
 git reset --hard "origin/${DEPLOY_BRANCH}"
 
 echo "Pulling backend image..."
-docker compose -f "$COMPOSE_FILE" pull back || echo "Backend image pull failed; continuing with any existing local image"
+# Do NOT swallow this failure. Continuing with a stale local image makes a broken
+# deploy look successful: the site stays up, CI stays green, and the new code is
+# silently never deployed. Fail loudly instead.
+if ! docker compose -f "$COMPOSE_FILE" pull back; then
+  echo "ERROR: could not pull the backend image from the registry." >&2
+  echo "Refusing to continue, because doing so would silently redeploy the previous version." >&2
+  exit 1
+fi
 
 echo "Stopping existing compose services..."
 docker compose -f "$COMPOSE_FILE" down --remove-orphans || true

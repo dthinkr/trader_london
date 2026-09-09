@@ -1,6 +1,11 @@
 .env
 .env.*
 config/auth/
+# The build context is ./back, so the repo-root .dockerignore does not apply here.
+# Without this line a local `docker build ./back` would bake any service-account
+# key sitting in back/ straight into the image. CI never sees these files (they
+# are gitignored, so a fresh checkout lacks them), but local builds would.
+*service-account*.json
 logs/
 __pycache__/
 *.pyc

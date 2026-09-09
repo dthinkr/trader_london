@@ -1,9 +1,9 @@
 # Production docker-compose for Durham server
-# Uses pre-built images from Docker Hub - no local building required
+# Uses pre-built images from the GitHub Container Registry - no local building required
 
 services:
   back:
-    image: docker.io/venvoo/trading_platform:back
+    image: ghcr.io/lobx-platform/trading_platform:back
     volumes:
       - ./.env:/app/.env:ro
       - ./back/config:/app/config:Z

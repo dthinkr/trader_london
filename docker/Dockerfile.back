@@ -1,4 +1,8 @@
-FROM python:3.11-slim
+# Docker Official Image, served from AWS's public mirror rather than Docker Hub.
+# Identical content, but it keeps the build off Docker Hub entirely: no account,
+# and none of Docker Hub's anonymous pull limits, which CI runners share an
+# egress address for and can therefore hit without warning.
+FROM public.ecr.aws/docker/library/python:3.11-slim
 
 WORKDIR /app
 

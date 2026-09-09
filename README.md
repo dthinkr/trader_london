@@ -88,6 +88,23 @@ ADMIN_PASSWORD=xyz123
 
 For detailed documentation, feature explanations, and API references, visit the [Wiki](https://github.com/lobx-platform/lobx/wiki).
 
+## Credits
+
+
+# Contributions
+
+The platform was developed collaboratively, and contributions overlapped in several respects. The following classification is therefore intended as a simplified summary of the principal areas of contribution.
+
+- **Conceptual development and specification of platform functionality:** F. Feri, M. Jonuzaj, M. Naef, A. Sancetta, and W. Wu.
+- **Trading algorithms:** M. Jonuzaj had primary responsibility for the design and implementation of the trading algorithms, with additional input from A. Sancetta. W. Wu implemented the trader framework and integrated the algorithms into the platform.
+- **Platform development:** W. Wu was the principal software developer of the platform. He was responsible for the design and implementation of the core platform architecture and codebase, as well as its integration, deployment, and technical maintenance.
+- **Testing and experimental organization:** M. Jonuzaj and W. Wu.
+
+The platform builds on an earlier project developed by P. Chapkovski, who helped establish the initial version and contributed substantially to the early discussions and technical foundations on which the present platform was developed.
+
+F. Cordoni contributed to the early stages of the project, including initial conceptual discussions.
+
+
 ## License
 
 MIT License -- see [LICENSE](LICENSE) for details.

@@ -1,4 +1,6 @@
-FROM alpine:latest
+# Docker Official Image, served from AWS's public mirror rather than Docker Hub.
+# See docker/Dockerfile.back for why.
+FROM public.ecr.aws/docker/library/alpine:latest
 RUN apk add --no-cache wget unzip && \
     wget -O ngrok.zip https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip && \
     unzip ngrok.zip && \

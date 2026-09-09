@@ -90,9 +90,6 @@ For detailed documentation, feature explanations, and API references, visit the 
 
 ## Credits
 
-
-# Contributions
-
 The platform was developed collaboratively, and contributions overlapped in several respects. The following classification is therefore intended as a simplified summary of the principal areas of contribution.
 
 - **Conceptual development and specification of platform functionality:** F. Feri, M. Jonuzaj, M. Naef, A. Sancetta, and W. Wu.
